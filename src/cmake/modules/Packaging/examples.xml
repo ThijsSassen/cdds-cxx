@@ -1,0 +1,99 @@
+<!--
+  Copyright(c) 2006 to 2018 ADLINK Technology Limited and others
+
+  This program and the accompanying materials are made available under the
+  terms of the Eclipse Public License v. 2.0 which is available at
+  http://www.eclipse.org/legal/epl-2.0, or the Eclipse Distribution License
+  v. 1.0 which is available at
+  http://www.eclipse.org/org/documents/edl-v10.php.
+
+  SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+-->
+<!--
+  Installing the examples in the USERPROFILE directory.
+-->
+
+<CPackWiXPatch>
+  <CPackWiXFragment Id="#PRODUCT">
+    <DirectoryRef Id="TARGETDIR">
+      <Directory Id="PersonalFolder">
+        <Directory Id="APPUSERDIR" Name="$(var.PROJECT_NAME_SHORT)">
+          <Directory Id="APPVERSIONUSERDIR" Name="$(var.CPACK_PACKAGE_VERSION)">
+            <Directory Id="$(var.PROJECT_NAME_SHORT).exmpl" Name="examples">
+              <Directory Id="$(var.PROJECT_NAME_SHORT).exmpl.cpp" Name="cpp">
+                <Directory Id="$(var.PROJECT_NAME_SHORT).exmpl.cpp.helloworld" Name="helloworld" />
+              </Directory>
+            </Directory>
+          </Directory>
+        </Directory>
+      </Directory>
+    </DirectoryRef>
+
+    <Feature Id="UserWritableExampleFeature" Display="expand" Absent="disallow" ConfigurableDirectory="APPVERSIONUSERDIR" Title="$(var.CPACK_PACKAGE_NAME) Examples" Description="Example code to getting started with $(var.CPACK_PACKAGE_NAME) development." Level="1">
+      <Feature Id="UserWritableExampleDevFeature" Title="$(var.CPACK_PACKAGE_NAME) Development Examples" Description="Example Development files for use with $(var.CPACK_PACKAGE_NAME). Typically installed in the users 'Document' directory.">
+        <ComponentRef Id="$(var.PROJECT_NAME_SHORT).exmpl.ApplicationShortcut" />
+        <!-- <ComponentRef Id="$(var.PROJECT_NAME_SHORT).exmpl.environment" />
+        <ComponentRef Id="$(var.PROJECT_NAME_SHORT).cmake.prefix.path" /> -->
+        <ComponentRef Id="$(var.PROJECT_NAME_SHORT).exmpl.remove" />
+        <!-- c++ helloworld -->
+        <ComponentRef Id="$(var.PROJECT_NAME_SHORT).exmpl.cpp.helloworld.HelloWorldData.idl" />
+        <ComponentRef Id="$(var.PROJECT_NAME_SHORT).exmpl.cpp.helloworld.publisher.cpp" />
+        <ComponentRef Id="$(var.PROJECT_NAME_SHORT).exmpl.cpp.helloworld.subscriber.cpp" />
+        <ComponentRef Id="$(var.PROJECT_NAME_SHORT).exmpl.cpp.helloworld.CMakeLists.txt" />
+      </Feature>
+    </Feature>
+
+    <Component Id="$(var.PROJECT_NAME_SHORT).exmpl.remove" Directory="APPUSERDIR" Guid="7a01714b-81e8-4bfb-b02e-9658e9250c9d">
+      <RegistryValue Type="integer" Root="HKCU" Key="Software\$(var.CPACK_PACKAGE_VENDOR)\$(var.PROJECT_NAME_SHORT)\$(var.CPACK_PACKAGE_VERSION)" Name="$(var.PROJECT_NAME_SHORT).exmpl.remove" Value="1" KeyPath="yes" />
+
+      <!-- c++ helloworld -->
+      <RemoveFolder Id="Remove.$(var.PROJECT_NAME_SHORT).exmpl.cpp.helloworld" Directory="$(var.PROJECT_NAME_SHORT).exmpl.cpp.helloworld" On="uninstall"/>
+
+      <RemoveFolder Id="Remove.$(var.PROJECT_NAME_SHORT).exmpl.cpp" Directory="$(var.PROJECT_NAME_SHORT).exmpl.cpp" On="uninstall"/>
+      <RemoveFolder Id="Remove.$(var.PROJECT_NAME_SHORT).exmpl" Directory="$(var.PROJECT_NAME_SHORT).exmpl" On="uninstall"/>
+      <RemoveFolder Id="Remove.$(var.PROJECT_NAME_SHORT).version" Directory="APPVERSIONUSERDIR" On="uninstall"/>
+      <RemoveFolder Id="Remove.$(var.PROJECT_NAME_SHORT)" Directory="APPUSERDIR" On="uninstall"/>
+    </Component>
+
+    <!-- C++ Hello World - files -->
+    <Component Id="$(var.PROJECT_NAME_SHORT).exmpl.cpp.helloworld.HelloWorldData.idl" Directory="$(var.PROJECT_NAME_SHORT).exmpl.cpp.helloworld" Guid="ed8f7b65-03c2-4e2f-ac7c-cd12c970ad25">
+      <RegistryValue Type="integer" Root="HKCU" Key="Software\$(var.CPACK_PACKAGE_VENDOR)\$(var.PROJECT_NAME_SHORT)\$(var.CPACK_PACKAGE_VERSION)" Name="$(var.PROJECT_NAME_SHORT).exmpl.cpp.helloworld.HelloWorldData.idl" Value="1" KeyPath="yes" />
+      <File Id="$(var.PROJECT_NAME_SHORT).exmpl.cpp.helloworld.HelloWorldData.idl" Source="$(sys.SOURCEFILEDIR)/$(var.PACKAGE_FILE_NAME)/dev/share/$(var.PROJECT_NAME_SHORT)/examples/helloworld/HelloWorldData.idl" KeyPath="no"/>
+    </Component>
+
+    <Component Id="$(var.PROJECT_NAME_SHORT).exmpl.cpp.helloworld.publisher.cpp" Directory="$(var.PROJECT_NAME_SHORT).exmpl.cpp.helloworld" Guid="3cdb211e-5e50-4129-92b8-86fbaeb07511">
+      <RegistryValue Type="integer" Root="HKCU" Key="Software\$(var.CPACK_PACKAGE_VENDOR)\$(var.PROJECT_NAME_SHORT)\$(var.CPACK_PACKAGE_VERSION)" Name="$(var.PROJECT_NAME_SHORT).exmpl.cpp.helloworld.publisher.cpp" Value="1" KeyPath="yes" />
+      <File Id="$(var.PROJECT_NAME_SHORT).exmpl.cpp.helloworld.publisher.cpp" Source="$(sys.SOURCEFILEDIR)/$(var.PACKAGE_FILE_NAME)/dev/share/$(var.PROJECT_NAME_SHORT)/examples/helloworld/publisher.cpp" KeyPath="no"/>
+    </Component>
+
+    <Component Id="$(var.PROJECT_NAME_SHORT).exmpl.cpp.helloworld.subscriber.cpp" Directory="$(var.PROJECT_NAME_SHORT).exmpl.cpp.helloworld" Guid="9f7092e6-d398-4210-a48b-eb11d9c2d191">
+      <RegistryValue Type="integer" Root="HKCU" Key="Software\$(var.CPACK_PACKAGE_VENDOR)\$(var.PROJECT_NAME_SHORT)\$(var.CPACK_PACKAGE_VERSION)" Name="$(var.PROJECT_NAME_SHORT).exmpl.cpp.helloworld.subscriber.cpp" Value="1" KeyPath="yes" />
+      <File Id="$(var.PROJECT_NAME_SHORT).exmpl.cpp.helloworld.subscriber.cpp" Source="$(sys.SOURCEFILEDIR)/$(var.PACKAGE_FILE_NAME)/dev/share/$(var.PROJECT_NAME_SHORT)/examples/helloworld/subscriber.cpp" KeyPath="no"/>
+    </Component>
+
+    <Component Id="$(var.PROJECT_NAME_SHORT).exmpl.cpp.helloworld.CMakeLists.txt" Directory="$(var.PROJECT_NAME_SHORT).exmpl.cpp.helloworld" Guid="5e52c802-8a37-46a1-bae3-ef0ff3a9e0f2">
+      <RegistryValue Type="integer" Root="HKCU" Key="Software\$(var.CPACK_PACKAGE_VENDOR)\$(var.PROJECT_NAME_SHORT)\$(var.CPACK_PACKAGE_VERSION)" Name="$(var.PROJECT_NAME_SHORT).exmpl.cpp.helloworld.CMakeLists.txt" Value="1" KeyPath="yes" />
+      <File Id="$(var.PROJECT_NAME_SHORT).exmpl.cpp.helloworld.CMakeLists.txt" Source="$(sys.SOURCEFILEDIR)/$(var.PACKAGE_FILE_NAME)/dev/share/$(var.PROJECT_NAME_SHORT)/examples/helloworld/CMakeLists.txt" KeyPath="no"/>
+    </Component>
+
+    <!-- Create start-menu -->
+    <DirectoryRef Id="TARGETDIR">
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="$(var.CPACK_PACKAGE_NAME)"/>
+      </Directory>
+    </DirectoryRef>
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="$(var.PROJECT_NAME_SHORT).exmpl.ApplicationShortcut" Guid="724eb716-3fed-4c4c-b528-459d76adbb21">
+        <Shortcut Id="ApplicationStartMenuShortcut"
+                  Name="$(var.CPACK_PACKAGE_NAME) Examples"
+                  Directory="ApplicationProgramsFolder"
+                  Description="$(var.CPACK_PACKAGE_NAME) Examples"
+                  Target="[$(var.PROJECT_NAME_SHORT).exmpl]"
+                  IconIndex="0">
+        </Shortcut>
+        <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\$(var.CPACK_PACKAGE_VENDOR)\$(var.PROJECT_NAME_SHORT)\$(var.CPACK_PACKAGE_VERSION)" Name="$(var.PROJECT_NAME_SHORT).ApplicationStartMenuShortcut" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+    </DirectoryRef>
+  </CPackWiXFragment>
+</CPackWiXPatch>

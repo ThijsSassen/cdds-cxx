@@ -1,0 +1,276 @@
+schedules:
+- cron: "0 0 * * *"
+  displayName: Daily midnight build
+  always: true
+  branches:
+    include:
+    - master
+    
+variables:
+  CycloneDDS_URI: "<CycloneDDS><Domain><Internal><EnableExpensiveChecks>all</EnableExpensiveChecks></Internal><Tracing><Verbosity>config</Verbosity><OutputFile>stderr</OutputFile></Tracing></Domain></CycloneDDS>"
+  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+  MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
+  CONAN_NON_INTERACTIVE: 1
+  CYCLONE_REPO: https://github.com/eclipse-cyclonedds/cyclonedds.git
+  CYCLONE_REF: master #need to checkout master as for now there is no tag with 60e5147 in it
+  IDLPP_REPO: https://github.com/ADLINK-IST/idlpp-cxx.git
+  IDLPP_REF: idlpp-cxx-1.0.0 #tag to checkout
+
+jobs:
+- job: Linux
+  pool:
+    vmImage: 'ubuntu-16.04'
+  strategy:
+    matrix:
+      Clang 6.0 Debug:
+        CC: clang
+        CXX: clang++
+        BuildType: Debug
+        USE_SANITIZER: address
+        GENERATOR: "Unix Makefiles"
+        CXX_STDLIB: libstdc++11
+
+      Clang 6.0 Release:
+        CC: clang
+        CXX: clang++
+        BuildType: Release
+        USE_SANITIZER: none
+        GENERATOR: "Unix Makefiles"
+        CXX_STDLIB: libstdc++11
+
+      GCC 8 Debug:
+        CC: gcc-8
+        CXX: g++-8
+        BuildType: Debug
+        USE_SANITIZER: none
+        GENERATOR: "Unix Makefiles"
+        CXX_STDLIB: libstdc++11
+
+      GCC 8 Release:
+        CC: gcc-8
+        CXX: g++-8
+        BuildType: Release
+        USE_SANITIZER: none
+        GENERATOR: "Unix Makefiles"
+        CXX_STDLIB: libstdc++11
+
+  steps:
+     - task: UsePythonVersion@0
+       inputs:
+         versionSpec: '3.7'
+     - script: |
+         git clone --branch $(CYCLONE_REF) $(CYCLONE_REPO)
+         git clone --branch $(IDLPP_REF) $(IDLPP_REPO)
+       displayName: 'Checkout repositories' 
+     - script: |
+         sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+         sudo apt-get update
+         sudo apt-get install -y gcc-8 g++-8
+         pip install --upgrade pip     
+         pip install conan --upgrade
+         conan profile new default --detect
+         conan profile update settings.compiler.libcxx=$(CXX_STDLIB) default
+         conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
+         mkdir -p $(Build.SourcesDirectory)/cyclonedds/build
+         cd $(Build.SourcesDirectory)/cyclonedds/build
+         conan install -b missing -s arch=x86_64 -s build_type=$(BuildType) ..
+         mkdir -p $(Build.SourcesDirectory)/build
+         cd $(Build.SourcesDirectory)/build
+         conan install -b missing -s arch=x86_64 -s build_type=$(BuildType) ..
+       displayName: 'Install Build Dependencies'
+     - template: templates/build_and_test.yml
+   
+- job: Windows_VS19
+  pool:
+    vmImage: 'windows-2019'
+  strategy:
+    matrix:
+      x86_64 Debug:
+        BuildType: Debug
+        GENERATOR: "Visual Studio 16 2019"
+        ARCH: x86_64
+        USE_SANITIZER: none
+
+      x86_64 Release:
+        BuildType: Release
+        GENERATOR: "Visual Studio 16 2019"
+        ARCH: x86_64
+        USE_SANITIZER: none 
+ 
+  steps:
+     - task: UsePythonVersion@0
+       inputs:
+         versionSpec: '3.7'
+     - script: |
+         git clone --branch $(CYCLONE_REF) $(CYCLONE_REPO)
+         git clone --branch $(IDLPP_REF) $(IDLPP_REPO)
+       displayName: 'Checkout repositories'  
+     - script: |
+         pip install --upgrade pip --user       
+         pip install conan --upgrade
+         conan profile new default --detect
+         conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
+         md $(Build.SourcesDirectory)\cyclonedds\build
+         cd $(Build.SourcesDirectory)\cyclonedds\build
+         conan install -b missing -s arch=$(ARCH) -s build_type=$(BuildType) ..
+         md $(Build.SourcesDirectory)\build
+         cd $(Build.SourcesDirectory)\build
+         conan install -b missing -s arch=$(ARCH) -s build_type=$(BuildType) ..  
+       displayName: 'Install Build Dependencies'
+     - template: templates/build_and_test.yml
+ 
+- job: Windows_VS17
+  pool:
+    vmImage: 'vs2017-win2016'
+  strategy:
+    matrix:
+      x86 Release:
+        BuildType: Release
+        GENERATOR: "Visual Studio 15 2017"
+        ARCH: x86
+        USE_SANITIZER: none 
+  
+      x86_64 Release:
+        BuildType: Release
+        GENERATOR: "Visual Studio 15 2017 Win64"
+        ARCH: x86_64
+        USE_SANITIZER: none
+  
+  steps:
+     - task: UsePythonVersion@0
+       inputs:
+         versionSpec: '3.7'
+     - script: |
+         git clone --branch $(CYCLONE_REF) $(CYCLONE_REPO)
+         git clone --branch $(IDLPP_REF) $(IDLPP_REPO)
+       displayName: 'Checkout repositories'
+     - script: |
+         pip install --upgrade pip --user      
+         pip install conan --upgrade
+         conan profile new default --detect
+         conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
+         md $(Build.SourcesDirectory)\cyclonedds\build
+         cd $(Build.SourcesDirectory)\cyclonedds\build
+         conan install -b missing -s arch=$(ARCH) -s build_type=$(BuildType) ..
+         md $(Build.SourcesDirectory)\build
+         cd $(Build.SourcesDirectory)\build
+         conan install -b missing -s arch=$(ARCH) -s build_type=$(BuildType) ..
+       displayName: 'Install Build Dependencies'
+     - template: templates/build_and_test.yml
+ 
+            
+- job: MacOS_10_13
+  pool:
+    vmImage: 'macOS-10.13'
+  strategy:
+    matrix:
+      Xcode 10.0 Release:
+        BuildType: Release
+        USE_SANITIZER: none
+        GENERATOR: "Unix Makefiles"
+        CXX_STDLIB: libc++
+        XCODE: 10
+
+      Xcode 9.0 Release:
+        BuildType: Release
+        USE_SANITIZER: none
+        GENERATOR: "Unix Makefiles"
+        CXX_STDLIB: libc++
+        XCODE: 9
+
+  steps:
+     - task: UsePythonVersion@0
+       inputs:
+         versionSpec: '3.7'
+     - script: |
+         git clone --branch $(CYCLONE_REF) $(CYCLONE_REPO)
+         git clone --branch $(IDLPP_REF) $(IDLPP_REPO)
+       displayName: 'Checkout repositories' 
+     - bash: |
+         /bin/bash -c "sudo xcode-select -s /Applications/Xcode_9.app/Contents/Developer"
+         clang --version
+       displayName: 'Set Xcode9 as default'
+       failOnStderr: false
+       condition: eq( variables['XCODE'], '9' )
+     - script: |
+         sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate off
+         pip install --upgrade pip       
+         brew update
+         brew outdated pyenv || brew upgrade pyenv
+         brew install pyenv-virtualenv
+         if which pyenv > /dev/null; then
+             eval "$(pyenv init -)"
+         fi
+         pyenv virtualenv conan
+         pyenv rehash
+         pyenv activate conan
+         pip install conan --upgrade
+         conan profile new default --detect
+         conan profile update settings.compiler.libcxx=$(CXX_STDLIB) default
+         conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
+         mkdir -p $(Build.SourcesDirectory)/cyclonedds/build
+         cd $(Build.SourcesDirectory)/cyclonedds/build
+         conan install -b missing -s arch=x86_64 -s build_type=$(BuildType) ..
+         mkdir -p $(Build.SourcesDirectory)/build
+         cd $(Build.SourcesDirectory)/build
+         conan install -b missing -s arch=x86_64 -s build_type=$(BuildType) ..
+       displayName: 'Install Build Dependencies'
+     - template: templates/build_and_test.yml   
+
+- job: MacOS_10_14
+  pool:
+    vmImage: 'macOS-10.14'
+  strategy:
+    matrix:
+      Xcode 11.0 Debug:
+        BuildType: Debug
+        USE_SANITIZER: address
+        GENERATOR: "Unix Makefiles"
+        CXX_STDLIB: libc++
+
+      Xcode 11.0 Release:
+        BuildType: Release
+        USE_SANITIZER: none
+        GENERATOR: "Unix Makefiles"
+        CXX_STDLIB: libc++
+
+  steps:
+     - task: UsePythonVersion@0
+       inputs:
+         versionSpec: '3.7'
+     - script: |
+         git clone --branch $(CYCLONE_REF) $(CYCLONE_REPO)
+         git clone --branch $(IDLPP_REF) $(IDLPP_REPO)
+       displayName: 'Checkout repositories'     
+     - bash: |
+         /bin/bash -c "sudo xcode-select -s /Applications/Xcode_11.app/Contents/Developer"
+         clang --version
+       displayName: 'Set Xcode11 as default'
+       failOnStderr: false
+     - script: |
+         sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate off
+         pip install --upgrade pip
+         brew update
+         brew outdated pyenv || brew upgrade pyenv
+         brew install pyenv-virtualenv
+         if which pyenv > /dev/null; then
+             eval "$(pyenv init -)"
+         fi
+         pyenv virtualenv conan
+         pyenv rehash
+         pyenv activate conan
+         pip install conan --upgrade
+         conan profile new default --detect
+         conan profile update settings.compiler.libcxx=$(CXX_STDLIB) default
+         conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
+         mkdir -p $(Build.SourcesDirectory)/cyclonedds/build
+         cd $(Build.SourcesDirectory)/cyclonedds/build
+         conan install -b missing -s arch=x86_64 -s build_type=$(BuildType) ..
+         mkdir -p $(Build.SourcesDirectory)/build
+         cd $(Build.SourcesDirectory)/build
+         conan install -b missing -s arch=x86_64 -s build_type=$(BuildType) ..
+       displayName: 'Install Build Dependencies'
+     - template: templates/build_and_test.yml   
+
+
+

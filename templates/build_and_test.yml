@@ -1,0 +1,144 @@
+steps:
+   - task: CacheBeta@0
+     inputs:
+       key: maven
+       path: $(MAVEN_CACHE_FOLDER)
+     displayName: Cache Maven local repo
+   - task: CMake@1
+     displayName: 'CMake configure CycloneDDS'
+     inputs:
+       cmakeArgs: '-DCMAKE_BUILD_TYPE=$(BuildType)
+          -DCMAKE_INSTALL_PREFIX=$(Build.SourcesDirectory)/cyclonedds/build/install
+          -DUSE_SANITIZER=$(USE_SANITIZER)
+          -G "$(GENERATOR)" ..'
+       workingDirectory: cyclonedds/build
+   - bash: |
+      echo $PATH
+      case "$(GENERATOR)" in
+         "Unix Makefiles")
+           cmake --build . --config $(BuildType) --target install -- -j 4
+           ;;
+         "Visual Studio "*)
+           cmake --build . --config $(BuildType) --target install -- -nologo -verbosity:minimal -maxcpucount -p:CL_MPCount=2
+           ;;
+         *)
+           cmake --build . --config $(BuildType) --target install
+           ;;
+       esac
+     workingDirectory: cyclonedds/build
+     failOnStderr: false
+     displayName: 'Compile and install CycloneDDS'
+
+   - task: CMake@1
+     displayName: 'CMake configure CXX Idl compiler'
+     inputs:
+       cmakeArgs: '-DCMAKE_BUILD_TYPE=$(BuildType)
+          -DCMAKE_INSTALL_PREFIX=$(Build.SourcesDirectory)/idlpp-cxx/build/install
+          -DUSE_SANITIZER=$(USE_SANITIZER)
+          -G "$(GENERATOR)" ..' 
+       workingDirectory: idlpp-cxx/build
+   - bash: |
+      case "$(GENERATOR)" in
+         "Unix Makefiles")
+           cmake --build . --config $(BuildType) --target install -- -j 4
+           ;;
+         "Visual Studio "*)
+           cmake --build . --config $(BuildType) --target install -- -nologo -verbosity:minimal -maxcpucount -p:CL_MPCount=2
+           ;;
+         *)
+           cmake --build . --config $(BuildType) --target install
+           ;;
+       esac
+     workingDirectory: idlpp-cxx/build
+     failOnStderr: false
+     displayName: 'Compile and install CXX idl compiler'
+   
+   - task: CMake@1
+     displayName: 'CMake configure CXX API'
+     inputs:
+       cmakeArgs: '-DCMAKE_BUILD_TYPE=$(BuildType)
+          -DCMAKE_INSTALL_PREFIX=$(Build.SourcesDirectory)/build/install
+          -DBUILD_TESTING=ON
+          -DUSE_SANITIZER=$(USE_SANITIZER)
+          -DCMAKE_PREFIX_PATH="$(Build.SourcesDirectory)/idlpp-cxx/build/install/lib/cmake/Idlpp-cxx;$(Build.SourcesDirectory)/cyclonedds/build/install/lib/cmake/CycloneDDS"
+          -G "$(GENERATOR)" ..' 
+       workingDirectory: build
+   - bash: |
+      case "$(GENERATOR)" in
+         "Unix Makefiles")
+           cmake --build . --config $(BuildType) --target install -- -j 4
+           ;;
+         "Visual Studio "*)
+           cmake --build . --config $(BuildType) --target install -- -nologo -verbosity:minimal -maxcpucount -p:CL_MPCount=2
+           ;;
+         *)
+           cmake --build . --config $(BuildType) --target install
+           ;;
+      esac
+      # update path so idlc libs can be found on windows during testing
+      echo "##vso[task.prependpath]$(Build.SourcesDirectory)\cyclonedds\build\install\bin" 
+      echo "##vso[task.prependpath]$(Build.SourcesDirectory)\idlpp-cxx\build\install\share\Idlpp-cxx\idlpp" 
+     workingDirectory: build
+     failOnStderr: false
+     displayName: 'Compile and install CXX API'
+# Notes on test settings:
+# - CYCLONEDDS_URI:
+#   - EnableExpensiveChecks: for the few horrendously expensive (but pretty thorough)
+#     integrity checks, in particular on the WHC and the RHC, but there may be more
+#   - config to stderr: gives the configuration used when running the test in conjunction
+#     with "--output-on-failure" (sadly that still doesn't output the failed
+#     assertions ...)
+# - -j 4: run 4 tests in parallel, this saves quite a bit of time because the VMs are
+#   all dual-core
+# - --output-on-failed: print whatever output the test generated when it failed, which
+#   can obviously be quite helpful for debugging
+#  Currently C++ test result in a failure of 2 waitset tests when run in parallel so run them sequential
+#  TODO fix this
+   - bash: |
+       ctest -j 4 --output-on-failure -T test -E '^GTest_ddscxx_WaitSet' -C $(BuildType)
+       ctest --output-on-failure -T test -R '^GTest_ddscxx_WaitSet' -C $(BuildType)
+     continueOnError: true
+     workingDirectory: build
+     failOnStderr: false
+     displayName: 'Test'
+     env:
+        CYCLONEDDS_URI: '$(CYCLONEDDS_URI)'
+        ASAN_OPTIONS: detect_container_overflow=0 #There is an error report inside gtest code this needs to be looked into
+   - bash: |
+      if [ "$USE_SANITIZER" != "none" ]; then
+         echo "##vso[task.setvariable variable=CMAKE_LINKER_FLAGS]-DCMAKE_LINKER_FLAGS=-fsanitize=$(USE_SANITIZER)"
+         echo "##vso[task.setvariable variable=CMAKE_C_FLAGS]-DCMAKE_C_FLAGS=-fsanitize=$(USE_SANITIZER)"
+      fi
+      mkdir build
+     displayName: 'Setup example environment'
+     workingDirectory: build/install/share/CycloneDDS_CXX_API/examples/helloworld
+   - task: CMake@1
+     inputs:
+       cmakeArgs: '-no-warn-unused-cli -DCMAKE_BUILD_TYPE=$(BuildType)
+          $CMAKE_C_FLAGS $CMAKE_LINKER_FLAGS
+          -DCMAKE_PREFIX_PATH="$(Build.SourcesDirectory)/idlpp-cxx/build/install/lib/cmake/Idlpp-cxx;$(Build.SourcesDirectory)/cyclonedds/build/install/lib/cmake/CycloneDDS"
+          -G "$(GENERATOR)" ..' 
+       workingDirectory: build/install/share/CycloneDDS_CXX_API/examples/helloworld/build 
+     displayName: 'CMake configure CXX HelloWorld Example'
+   - bash: |
+      cmake --build . --config $(BuildType)
+     workingDirectory: build/install/share/CycloneDDS_CXX_API/examples/helloworld/build
+     failOnStderr: false
+     displayName: 'Compile CXX HelloWorld Example'
+   - script: |
+       cmake --build . --config $(BuildType) --target package
+     workingDirectory: build
+     failOnStderr: false
+     displayName: 'Create installer'
+   - task: CopyFiles@2
+     inputs:
+       sourceFolder: '$(Build.SourcesDirectory)'
+       targetFolder: '$(Build.ArtifactStagingDirectory)'
+       contents: 'build/?(*.deb|*.msi|*.tar.gz|*.tar|*.zip|*.sh)'
+     displayName: 'Copy installer'
+   - task: PublishBuildArtifacts@1
+     inputs:
+       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+       artifactName: installer_$(AGENT.JOBNAME)_$(BuildType)
+     displayName: 'Publish installer'
+     

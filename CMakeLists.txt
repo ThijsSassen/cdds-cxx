@@ -98,7 +98,7 @@ else()
 endif()
 
 
-option(BUILD_TESTING "Build the testing tree." OFF)
+option(BUILD_TESTING "Build the testing tree." ON)
 include(CTest)
 
 # Overrule example installation locations.

@@ -18,7 +18,7 @@
 using namespace org::eclipse::cyclonedds;
 
 int main(int, char**) {
-    int result = 0;
+    int result = EXIT_SUCCESS;
 
     try {
         std::cout << "=== [Publisher] Create writer." << std::endl;

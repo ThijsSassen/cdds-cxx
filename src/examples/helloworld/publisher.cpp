@@ -15,32 +15,26 @@
 /* Include data type and specific traits to be used with the C++ DDS API. */
 #include "HelloWorldData_DCPS.hpp"
 
+using namespace org::eclipse::cyclonedds;
 
-int main ()
-{
-    int result = EXIT_SUCCESS;
+int main(int, char**) {
+    int result = 0;
 
-    dds::domain::DomainParticipant participant = dds::core::null;
-    dds::topic::Topic<HelloWorldData::Msg> topic = dds::core::null;
-    dds::pub::Publisher publisher = dds::core::null;
-    dds::pub::DataWriter<HelloWorldData::Msg> writer = dds::core::null;
-
-    try
-    {
+    try {
         std::cout << "=== [Publisher] Create writer." << std::endl;
 
         /* First, a domain participant is needed.
          * Create one on the default domain. */
-        participant = dds::domain::DomainParticipant(org::eclipse::cyclonedds::domain::default_id());
+        dds::domain::DomainParticipant participant(domain::default_id());
 
         /* To publish something, a topic is needed. */
-        topic = dds::topic::Topic<HelloWorldData::Msg>(participant, "ddscxx_helloworld_example");
+        dds::topic::Topic<HelloWorldData::Msg> topic(participant, "ddscxx_helloworld_example");
 
         /* A writer also needs a publisher. */
-        publisher = dds::pub::Publisher(participant);
+        dds::pub::Publisher publisher(participant);
 
         /* Now, the writer can be created to publish a HelloWorld message. */
-        writer = dds::pub::DataWriter<HelloWorldData::Msg>(publisher, topic);
+        dds::pub::DataWriter<HelloWorldData::Msg> writer(publisher, topic);
 
         /* For this example, we'd like to have a subscriber to actually read
          * our message. This is not always necessary. Also, the way it is
@@ -49,8 +43,7 @@ int main ()
          * Please take a look at Listeners and WaitSets for much better
          * solutions, albeit somewhat more elaborate ones. */
         std::cout << "=== [Publisher] Waiting for subscriber." << std::endl;
-        while (writer.publication_matched_status().current_count() == 0)
-        {
+        while (writer.publication_matched_status().current_count() == 0) {
             Sleep(20 /*msec*/);
         }
 
@@ -73,8 +66,7 @@ int main ()
             Sleep(20 /*msec*/);
         }
     }
-    catch (const dds::core::Exception& e)
-    {
+    catch (const dds::core::Exception& e) {
         std::cerr << "=== [Publisher] Exception: " << e.what() << std::endl;
         result = EXIT_FAILURE;
     }

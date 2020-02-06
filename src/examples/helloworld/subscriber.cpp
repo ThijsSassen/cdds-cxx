@@ -15,32 +15,26 @@
 /* Include data type and specific traits to be used with the C++ DDS API. */
 #include "HelloWorldData_DCPS.hpp"
 
+using namespace org::eclipse::cyclonedds;
 
-int main ()
-{
+int main () {
     int result = EXIT_SUCCESS;
 
-    dds::domain::DomainParticipant participant = dds::core::null;
-    dds::topic::Topic<HelloWorldData::Msg> topic = dds::core::null;
-    dds::sub::Subscriber subscriber = dds::core::null;
-    dds::sub::DataReader<HelloWorldData::Msg> reader = dds::core::null;
-
-    try
-    {
+    try {
         std::cout << "=== [Subscriber] Create reader." << std::endl;
 
         /* First, a domain participant is needed.
          * Create one on the default domain. */
-        participant = dds::domain::DomainParticipant(org::eclipse::cyclonedds::domain::default_id());
+        dds::domain::DomainParticipant participant(domain::default_id());
 
         /* To subscribe to something, a topic is needed. */
-        topic = dds::topic::Topic<HelloWorldData::Msg>(participant, "ddscxx_helloworld_example");
+        dds::topic::Topic<HelloWorldData::Msg> topic(participant, "ddscxx_helloworld_example");
 
         /* A reader also needs a subscriber. */
-        subscriber = dds::sub::Subscriber(participant);
+        dds::sub::Subscriber subscriber(participant);
 
         /* Now, the reader can be created to subscribe to a HelloWorld message. */
-        reader = dds::sub::DataReader<HelloWorldData::Msg>(subscriber, topic);
+        dds::sub::DataReader<HelloWorldData::Msg> reader(subscriber, topic);
 
         /* Poll until a message has been read.
          * It isn't really recommended to do this kind wait in a polling loop.
@@ -49,8 +43,7 @@ int main ()
          * solutions, albeit somewhat more elaborate ones. */
         std::cout << "=== [Subscriber] Wait for message." << std::endl;
         bool poll = true;
-        while (poll)
-        {
+        while (poll) {
             /* For this example, the reader will return a set of messages (aka
              * Samples). There are other ways of getting samples from reader.
              * See the various read() and take() functions that are present. */
@@ -60,14 +53,12 @@ int main ()
             samples = reader.take();
 
             /* Are samples read? */
-            if (samples.length() > 0)
-            {
+            if (samples.length() > 0) {
                 /* Use an iterator to run over the set of samples. */
                 dds::sub::LoanedSamples<HelloWorldData::Msg>::const_iterator sample_iter;
                 for (sample_iter = samples.begin();
                      sample_iter < samples.end();
-                     ++sample_iter)
-                {
+                     ++sample_iter) {
                     /* Get the message and sample information. */
                     const HelloWorldData::Msg& msg = sample_iter->data();
                     const dds::sub::SampleInfo& info = sample_iter->info();
@@ -94,8 +85,7 @@ int main ()
             }
         }
     }
-    catch (const dds::core::Exception& e)
-    {
+    catch (const dds::core::Exception& e) {
         std::cerr << "=== [Subscriber] Exception: " << e.what() << std::endl;
         result = EXIT_FAILURE;
     }

@@ -6,24 +6,19 @@ ISO/IEC C++ DCPS API                                                            
 ISO C++ is the latest DDS DCPS API for the C++ Language. It is more user friendly
 and simpler to use.
 
-As of Vortex Lite version 2.0 the only supported ISO C++ version is v2. While most things
-haven't changed between ISOC++ V1 and V2 regarding the API, there are still some differences
-that should be considered when migrating from V1 to V2. These differences are addressed in
-the \subpage migrationguide.
-
 This documentation serves to provide a reference guide and a basic introduction to
 the ISO C++ API. Due to the way that ISO C++ is implemented using delegates, the
 API reference is not a 1:1 representation of the implementation structure of the API,
 it is however a representation of the user accessible layer of the API.
 
-A number of classes and functions are not currently supported in the Lite ISO C++ API.
+A number of classes and functions are not currently supported in the ISO C++ API.
 Details of these can be found on the \subpage unsupported_classes_and_functions page.
 
 Getting started                                                                {#mainpage_gettingstarted}
 ===============
 
 If you are new to ISO C++ we would recommend that you start by looking at the example
-code provided in your Lite installation directory as well as the documentation
+code provided in your CXX installation directory as well as the documentation
 in the sections below.
 
 A summary of each example, along with build instructions can be found on the

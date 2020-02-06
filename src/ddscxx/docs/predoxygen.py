@@ -231,7 +231,7 @@ def main():
     parser = optparse.OptionParser()
 
     parser.add_option("-i", "--inputdir", dest="basedir", action="append",
-            help=("Base folder for the documents eg. $OSPL_HOME/src/api/dcps/isocpp/include")
+            help=("Base folder for the documents eg. $CXX_HOME/src/ddscxx/include")
             )
     parser.add_option("-e", "--extension", dest="fx",
             help=("File extension eg. hpp"

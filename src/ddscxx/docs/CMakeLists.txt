@@ -30,9 +30,7 @@ add_custom_target(predoxygen
 
 # Execute Doxygen
 
-set(doxy_conf_project "Vortex Lite ISO C++ API Reference Guide")
-set(doxy_conf_proj_logo "${PROJECT_SOURCE_DIR}/src/docs/images/PROJECT_LOGO_Lite.png")
-set(doxy_conf_image_path "${PROJECT_SOURCE_DIR}/src/docs/dcps/img/")
+set(doxy_conf_project "Cyclone ISO C++ API Reference Guide")
 set(doxy_conf_outputdir "ddscxx_api")
 set(doxy_conf_input "${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/predoxygen/include")
 set(doxy_conf_exclude "${PROJECT_SOURCE_DIR}/src/ddscxx/docs/predoxygen.py")
@@ -63,8 +61,8 @@ set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
 add_custom_command(TARGET ddscxx_doxygen
     POST_BUILD
     WORKING_DIRECTORY "${doxy_conf_outputdir}"
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/doc/api/isocpp
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "html" ${PROJECT_BINARY_DIR}/doc/api/isocpp)  
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/doc/api/cxx
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "html" ${PROJECT_BINARY_DIR}/doc/api/cxx)  
 
 install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${doxy_conf_outputdir}/html/"
     DESTINATION ${CMAKE_INSTALL_DDSCXX_DOCDIR}

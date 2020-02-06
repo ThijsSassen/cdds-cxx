@@ -4,7 +4,7 @@ Unsupported Classes and Functions                                               
 Unsupported Classes                                                                                 {#unsupported_classes}
 ===================
 
-The following classes are currently unsupported in the Lite ISO C++ API:
+The following classes are currently unsupported in the ISO C++ API:
 
 - dds::topic
     - dds::topic::ContentFilteredTopic

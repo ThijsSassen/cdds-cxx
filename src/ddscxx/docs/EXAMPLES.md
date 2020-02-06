@@ -6,7 +6,7 @@ Examples                                                                        
 DCPS Examples                                                                   {#isocpp_examples_dcpslist}
 =============
 
-The examples source code can be found in the examples folder of your Lite installation.
+The examples source code can be found in the examples folder of your CXX installation.
 The descriptions below summarize what each example demonstrates. Towards the bottom of
 the page you will find instructions on how to build and run the examples.
 
@@ -46,16 +46,12 @@ When the subscriber receives the sample, it displays the userID field and the me
 Build:
 ------
 To build the example simply do
-.. code-block:: bash
-   cd share/Lite/examples/<API>/helloworld
-     make
-     Where <API> =
-     ddsc for c99.
-     ddscxx for the latest C++ PSM
-   mkdir build
-   cd build
-   cmake ..
-   make
+
+    cd share/CycloneDDS_CXX_API/examples/helloworld
+    mkdir build
+    cd build
+    cmake -DCMAKE_PREFIX_PATH="<idlpp-cxx install path>/lib/cmake/Idlpp-cxx;<CycloneDDS install path>/lib/cmake/CycloneDDS" ..
+    cmake --build .
 
 Running the example:
 --------------------

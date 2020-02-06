@@ -82,3 +82,6 @@ The ``<install-location>`` directory is will be used to create the package(s).
 
 Depending on the target, you now have packages.
 
+## Documentation
+
+Documentation for the CXX API can be found [here](https://atolab.github.io/cdds-docs/api/cxx/index.html)

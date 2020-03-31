@@ -1,13 +1,13 @@
 /*
- *                         Vortex Lite
+ * Copyright(c) 2006 to 2020 ADLINK Technology Limited and others
  *
- *   This software and documentation are Copyright 2006 to 2015 PrismTech
- *   Limited and its licensees. All rights reserved. See file:
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Eclipse Distribution License
+ * v. 1.0 which is available at
+ * http://www.eclipse.org/org/documents/edl-v10.php.
  *
- *                     $LITE_HOME/LICENSE
- *
- *   for full copyright notice and license terms.
- *
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
  */
 #ifndef OMG_DDS_DOMAIN_PACKAGE_DETAIL_INCLUDE_HPP_
 #define OMG_DDS_DOMAIN_PACKAGE_DETAIL_INCLUDE_HPP_

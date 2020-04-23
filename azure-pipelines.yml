@@ -190,8 +190,12 @@ jobs:
        failOnStderr: false
      - script: |
          sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate off
-         pip install --upgrade pip
          brew update
+         brew uninstall --ignore-dependencies openssl
+         brew install openssl
+         brew link --overwrite --dry-run openssl 
+         brew link --force openssl
+         pip install --upgrade pip
          brew outdated pyenv || brew upgrade pyenv
          brew install pyenv-virtualenv
          if which pyenv > /dev/null; then

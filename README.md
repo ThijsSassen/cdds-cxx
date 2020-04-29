@@ -23,6 +23,7 @@ Building the CXX API, requires only a few simple steps. There are some small dif
 between Linux and macOS on the one hand, and Windows on the other. For Linux or macOS:
 
     $ git clone https://github.com/ThijsSassen/cdds-cxx.git
+    $ cd cdds-cxx
     $ mkdir build
     $ cd build
     $ cmake -DCMAKE_PREFIX_PATH="<idlpp-cxx install path>/lib/cmake/Idlpp-cxx;<CycloneDDS install path>/lib/cmake/CycloneDDS" <cmake-config_options> ..
@@ -31,6 +32,7 @@ between Linux and macOS on the one hand, and Windows on the other. For Linux or 
 and for Windows:
 
     $ git clone https://github.com/ThijsSassen/cdds-cxx.git
+    $ cd cdds-cxx
     $ mkdir build
     $ cd build
     $ cmake -DCMAKE_PREFIX_PATH="<idlpp-cxx install path>\lib\cmake\Idlpp-cxx;<CycloneDDS install path>\lib\cmake\CycloneDDS" -G "<generator-name>" <cmake-config_options> ..

@@ -91,13 +91,6 @@ endif()
 
 include(GNUInstallDirs)
 
-if(APPLE)
-  set(CMAKE_INSTALL_RPATH "@loader_path/../${CMAKE_INSTALL_LIBDIR}")
-else()
-  set(CMAKE_INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
-endif()
-
-
 option(BUILD_TESTING "Build the testing tree." ON)
 include(CTest)
 
@@ -123,6 +116,16 @@ find_package(Idlpp-cxx REQUIRED)
 if(NOT Idlpp-cxx_FOUND)
   message(WARNING "Could not find Idlpp-cxx - please provide it through CMAKE_PREFIX_PATH")
   return()
+endif()
+
+if(APPLE)
+  set(CMAKE_INSTALL_RPATH
+     "@loader_path/../${CMAKE_INSTALL_LIBDIR}"
+     "${CycloneDDS_DIR}/../..")
+else()
+  set(CMAKE_INSTALL_RPATH
+     "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}"
+     "${CycloneDDS_DIR}/../..")
 endif()
 
 add_subdirectory(src)

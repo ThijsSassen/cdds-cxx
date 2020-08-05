@@ -51,22 +51,26 @@ if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake" AND NOT CONAN_DEPENDENCIES)
   conan_define_targets()
 endif()
 
-# Set reasonably strict warning options for clang, gcc, msvc
-# Enable coloured ouput if Ninja is used for building
-if("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_C_COMPILER_ID}" STREQUAL "AppleClang")
-  add_definitions(-Wall -Wextra -Wconversion -Wunused)
-  if("${CMAKE_GENERATOR}" STREQUAL "Ninja")
-    add_definitions(-Xclang -fcolor-diagnostics)
-  endif()
-elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
-  add_definitions(-Wall -Wextra -Wconversion)
-  if("${CMAKE_GENERATOR}" STREQUAL "Ninja")
-    add_definitions(-fdiagnostics-color=always)
-  endif()
-elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
-  add_definitions(/W3)
-endif()
+option(BUILD_STRICT "Build with strict compiler warning conditions" ON)
+option(BUILD_EXAMPLES "Build example applications" ON)
 
+if(BUILD_STRICT)
+  # Set reasonably strict warning options for clang, gcc, msvc
+  # Enable coloured ouput if Ninja is used for building
+  if("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_C_COMPILER_ID}" STREQUAL "AppleClang")
+    add_definitions(-Wall -Wextra -Wconversion -Wunused)
+    if("${CMAKE_GENERATOR}" STREQUAL "Ninja")
+      add_definitions(-Xclang -fcolor-diagnostics)
+    endif()
+  elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+    add_definitions(-Wall -Wextra -Wconversion)
+    if("${CMAKE_GENERATOR}" STREQUAL "Ninja")
+      add_definitions(-fdiagnostics-color=always)
+    endif()
+  elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
+    add_definitions(/W3)
+  endif()
+endif()
 
 # Make it easy to enable one of Clang's/gcc's analyzers, and default to using
 # the address sanitizer for ordinary debug builds; gcc is giving some grief on

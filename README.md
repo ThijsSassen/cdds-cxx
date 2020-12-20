@@ -87,3 +87,9 @@ Depending on the target, you now have packages.
 ## Documentation
 
 Documentation for the CXX API can be found [here](https://atolab.github.io/cdds-docs/api/cxx/index.html)
+
+## License
+
+This project contains 2 types of license: Apach2 and Eclipse Public License / Eclipse Distribution License
+* The Apache2 license located in src/ddscxx/include/dds is for all files under src/ddscxx/include/dds except the details directories
+* Eclipse Public License / Eclipse Distribution License is valid for all other files.

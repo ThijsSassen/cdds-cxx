@@ -12,7 +12,7 @@ variables:
   MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
   CONAN_NON_INTERACTIVE: 1
   CYCLONE_REPO: https://github.com/eclipse-cyclonedds/cyclonedds.git
-  CYCLONE_REF: master #need to checkout master as for now there is no tag with 60e5147 in it
+  CYCLONE_REF: 0.6.0rc1
   IDLPP_REPO: https://github.com/ADLINK-IST/idlpp-cxx.git
   IDLPP_REF: idlpp-cxx-1.0.0 #tag to checkout
 
@@ -158,25 +158,16 @@ jobs:
        displayName: 'Install Build Dependencies'
      - template: templates/build_and_test.yml
  
-            
-- job: MacOS_10_13
+- job: MacOS_10_14
   pool:
-    vmImage: 'macOS-10.13'
+    vmImage: 'macOS-10.14'
   strategy:
     matrix:
-      Xcode 10.0 Release:
+      Xcode 11.3.1 Release:
         BuildType: Release
         USE_SANITIZER: none
         GENERATOR: "Unix Makefiles"
         CXX_STDLIB: libc++
-        XCODE: 10
-
-      Xcode 9.0 Release:
-        BuildType: Release
-        USE_SANITIZER: none
-        GENERATOR: "Unix Makefiles"
-        CXX_STDLIB: libc++
-        XCODE: 9
 
   steps:
      - task: UsePythonVersion@0
@@ -185,17 +176,10 @@ jobs:
      - script: |
          git clone --branch $(CYCLONE_REF) $(CYCLONE_REPO)
          git clone --branch $(IDLPP_REF) $(IDLPP_REPO)
-       displayName: 'Checkout repositories' 
-     - bash: |
-         /bin/bash -c "sudo xcode-select -s /Applications/Xcode_9.app/Contents/Developer"
-         clang --version
-       displayName: 'Set Xcode9 as default'
-       failOnStderr: false
-       condition: eq( variables['XCODE'], '9' )
+       displayName: 'Checkout repositories'     
      - script: |
          sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate off
-         pip install --upgrade pip       
-         brew update
+         pip install --upgrade pip
          brew outdated pyenv || brew upgrade pyenv
          brew install pyenv-virtualenv
          if which pyenv > /dev/null; then
@@ -217,18 +201,18 @@ jobs:
        displayName: 'Install Build Dependencies'
      - template: templates/build_and_test.yml   
 
-- job: MacOS_10_14
+- job: MacOS_10_15
   pool:
-    vmImage: 'macOS-10.14'
+    vmImage: 'macOS-10.15'
   strategy:
     matrix:
-      Xcode 11.0 Debug:
+      Xcode 11.4.1 Debug:
         BuildType: Debug
         USE_SANITIZER: address
         GENERATOR: "Unix Makefiles"
         CXX_STDLIB: libc++
 
-      Xcode 11.0 Release:
+      Xcode 11.4.1 Release:
         BuildType: Release
         USE_SANITIZER: none
         GENERATOR: "Unix Makefiles"
@@ -242,11 +226,6 @@ jobs:
          git clone --branch $(CYCLONE_REF) $(CYCLONE_REPO)
          git clone --branch $(IDLPP_REF) $(IDLPP_REPO)
        displayName: 'Checkout repositories'     
-     - bash: |
-         /bin/bash -c "sudo xcode-select -s /Applications/Xcode_11.app/Contents/Developer"
-         clang --version
-       displayName: 'Set Xcode11 as default'
-       failOnStderr: false
      - script: |
          sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate off
          pip install --upgrade pip
@@ -270,7 +249,5 @@ jobs:
          cd $(Build.SourcesDirectory)/build
          conan install -b missing -s arch=x86_64 -s build_type=$(BuildType) ..
        displayName: 'Install Build Dependencies'
-     - template: templates/build_and_test.yml   
-
-
+     - template: templates/build_and_test.yml  
 

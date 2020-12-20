@@ -1,13 +1,13 @@
 /*
- *                         Vortex Lite
+ * Copyright(c) 2006 to 2020 ADLINK Technology Limited and others
  *
- *   This software and documentation are Copyright 2006 to 2015 PrismTech
- *   Limited and its licensees. All rights reserved. See file:
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Eclipse Distribution License
+ * v. 1.0 which is available at
+ * http://www.eclipse.org/org/documents/edl-v10.php.
  *
- *                     $LITE_HOME/LICENSE
- *
- *   for full copyright notice and license terms.
- *
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
  */
 #ifndef CYCLONEDDS_DDS_CORE_DETAIL_REF_TRAITS_HPP_
 #define CYCLONEDDS_DDS_CORE_DETAIL_REF_TRAITS_HPP_
@@ -25,7 +25,6 @@
 #if defined(OSPL_USE_CXX11)
 #  include <memory>
 #  include <type_traits>
-#  include <array>
 #  define OSPL_CXX11_STD_MODULE ::std
 
 /* Compiling to use Tech Report 1 headers */
@@ -33,11 +32,9 @@
 #  ifdef _MSC_VER
 #    include <memory>
 #    include <type_traits>
-#    include <array>
 #  else
 #    include <tr1/memory>
 #    include <tr1/type_traits>
-#    include <tr1/array>
 #  endif
 #  define OSPL_CXX11_STD_MODULE ::std::tr1
 
@@ -46,7 +43,6 @@
 #  include <boost/shared_ptr.hpp>
 #  include <boost/weak_ptr.hpp>
 #  include <boost/type_traits.hpp>
-#  include <boost/array.hpp>
 #  define OSPL_CXX11_STD_MODULE ::boost
 
 #else
@@ -85,49 +81,6 @@ TO dds::core::polymorphic_cast(FROM& from)
     }
     return to;
 }
-
-/* We need a 'std' array. TIMTOWDI */
-#if !defined (OSPL_VANILLA_USING_TEMPLATE_IMPORT_BUST)
-namespace dds
-{
-namespace core
-{
-/* We're not renaming, or instantiating, so a vanilla using
- * should surely suffice. We don't need C++11 so this is the
- * default always unless: OSPL_VANILLA_USING_TEMPLATE_IMPORT_BUST
- * is defined */
-using OSPL_CXX11_STD_MODULE::array;
-}
-}
-#elif defined (OSPL_DDS_CXX11)
-/* C++11 template using syntax available. Go team! */
-namespace dds
-{
-namespace core
-{
-template <class T, std::size_t N > using array = OSPL_CXX11_STD_MODULE::array<T, N>;
-}
-}
-#elif !defined(OSPL_DONT_INHERIT_ARRAY)
-/* Workaround - this is not usually a GoodThing at all. AFAIK it
- * should cause no issues as all the ::array impls I've looked at
- * have no destructor to worry about. If I'm wrong you have a get
- * out in: OSPL_DONT_INHERIT_ARRAY */
-namespace dds
-{
-namespace core
-{
-template <class T, std::size_t N > struct array : public OSPL_CXX11_STD_MODULE::array<T, N> {};
-}
-}
-#else
-/* The below code was "lifted", to put it politely, from the GCC implementation
- * at some unknown point in time and included in the 'spec'.
- * It will never be used unless all else fails and the OSPL_DONT_INHERIT_ARRAY
- * is defined by you the user. */
-#include <dds/core/array.hpp>
-#endif
-
 
 // End of implementation
 
